@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-app
+    ports:
+      - "8080:80" # Локальный порт 8080 направлен на порт 80 контейнера
+    volumes:
+      - .:/var/www/html # Монтируем проект в контейнер для разработки
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306" # Опционально для доступа к БД извне
+
+      
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8081:80" # phpMyAdmin будет доступен по порту 8081
+    environment:
+      PMA_HOST: db # Название сервиса базы данных
+      MYSQL_ROOT_PASSWORD: rootpassword # Пароль root пользователя MySQL
+volumes:
+  db_data:
